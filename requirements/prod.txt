@@ -1,0 +1,6 @@
+-r ./base.txt
+
+django-storages==1.14.2
+
+# Required by the 'serverless-wsgi' plugin
+werkzeug==3.0.1

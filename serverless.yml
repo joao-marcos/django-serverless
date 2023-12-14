@@ -1,0 +1,73 @@
+service: django-serverless
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  region: ${env:AWS_REGION_NAME}
+  runtime: python3.8
+  stage: ${opt:stage, 'stg'}
+  timeout: 30
+  memorySize: 2048
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource:
+            - arn:aws:s3:::${env:STATIC_FILES_BUCKET_NAME}
+            - arn:aws:s3:::${env:STATIC_FILES_BUCKET_NAME}/*
+
+functions:
+  api:
+    handler: wsgi_handler.handler
+    events:
+      - http: ANY /
+      - http: ANY /{proxy+}
+
+plugins:
+  - serverless-wsgi
+  - serverless-python-requirements
+  - serverless-dotenv-plugin
+
+custom:
+  wsgi:
+    app: myapi.wsgi.application
+  pythonRequirements:
+    fileName: requirements/prod.txt
+
+package:
+  exclude:
+    - venv/**
+    - __pycache__/*
+    - node_modules/**
+    - README.md
+    - pytest.ini
+    - conftest.py
+
+resources:
+  Resources:
+    StaticFilesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${env:STATIC_FILES_BUCKET_NAME}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+
+    StaticFilesBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: StaticFilesBucket
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadGetObject
+              Action: "s3:GetObject"
+              Effect: Allow
+              Principal: "*"
+              Resource: "arn:aws:s3:::${env:STATIC_FILES_BUCKET_NAME}/*"
