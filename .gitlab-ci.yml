@@ -1,0 +1,27 @@
+stages:
+  - test
+
+
+"Server Tests":
+  image: python:3.8-slim
+  stage: test
+  services:
+    - postgres:15.4-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"  && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "staging"
+  before_script:
+    - pip install --upgrade pip
+    - pip install -r requirements/dev.txt
+  script:
+    - pytest -v
+  variables:
+    PGDATA: /pgdata
+    POSTGRES_USER: secret
+    POSTGRES_PASSWORD: secret
+    POSTGRES_DB: django_serverless
+    DB_HOST: postgres
+    DB_NAME: django_serverless
+    DB_USER: secret
+    DB_PASSWORD: secret
+    DB_PORT: 5432
+  
