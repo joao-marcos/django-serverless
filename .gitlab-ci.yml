@@ -1,9 +1,19 @@
 stages:
   - test
+  - deploy
+
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
+
+cache:
+  key: pip-cache-$CI_COMMIT_REF_SLUG
+  paths:
+    - $PIP_CACHE_DIR
 
 
 "Server Tests":
-  image: python:3.8-slim
+  image: python:3.9-slim
   stage: test
   services:
     - postgres:15.4-alpine
@@ -24,4 +34,25 @@ stages:
     DB_USER: secret
     DB_PASSWORD: secret
     DB_PORT: 5432
-  
+
+"Deploy Staging":
+  image: node:16-bullseye
+  stage: deploy
+  environment: staging
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "staging" &&  $CI_PIPELINE_SOURCE == "push"
+  before_script:
+    - apt-get update && apt-get install -y python3-pip
+    - npm install -g serverless
+    - npm install
+    - touch .env
+    - echo "STATIC_FILES_BUCKET_NAME=$STATIC_FILES_BUCKET_NAME">>.env
+    - echo "AWS_REGION_NAME=$AWS_REGION_NAME">>.env
+    - echo "DB_NAME=$DB_NAME">>.env
+    - echo "DB_USER=$DB_USER">>.env
+    - echo "DB_PASSWORD=$DB_PASSWORD">>.env
+    - echo "DB_HOST=$DB_HOST">>.env
+    - echo "DB_PORT=$DB_PORT">>.env
+  script:
+    - sls deploy --verbose
+    - sls wsgi manage --command "collectstatic --noinput"
