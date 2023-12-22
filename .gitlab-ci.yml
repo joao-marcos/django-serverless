@@ -19,6 +19,7 @@ cache:
     - postgres:15.4-alpine
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"  && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "staging"
+    - if: $CI_COMMIT_REF_NAME == "staging" &&  $CI_PIPELINE_SOURCE == "push"
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements/dev.txt
