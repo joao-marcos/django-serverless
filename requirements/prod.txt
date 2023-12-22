@@ -1,5 +1,7 @@
--r ./base.txt
-
+Django==4.2.7
+djangorestframework==3.14.0
+psycopg2-binary==2.9.9
+boto3==1.33.9
 django-storages==1.14.2
 
 # Required by the 'serverless-wsgi' plugin

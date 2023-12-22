@@ -5,7 +5,7 @@ useDotenv: true
 provider:
   name: aws
   region: ${env:AWS_REGION_NAME}
-  runtime: python3.8
+  runtime: python3.9
   stage: ${opt:stage, 'stg'}
   timeout: 30
   memorySize: 2048
@@ -42,9 +42,14 @@ package:
     - venv/**
     - __pycache__/*
     - node_modules/**
+    - pip-cache/**
     - README.md
     - pytest.ini
     - conftest.py
+    - .venv
+    - .venv.example
+    - package.json
+    - package-lock.json
 
 resources:
   Resources:

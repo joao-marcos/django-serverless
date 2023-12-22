@@ -1,4 +1,4 @@
--r ./base.txt
+-r ./prod.txt
 
 factory-boy==3.3.0
 Faker==20.1.0
